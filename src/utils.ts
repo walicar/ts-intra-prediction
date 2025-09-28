@@ -33,43 +33,7 @@ export const makePred = async (preCtx: PredictionContext): Promise<PredictionCon
 
     // create prediction block
     if (mode == 0) {
-        const avgColor = averageColor(samples);
-        for (let i = 0; i < BLOCK_SIZE * BLOCK_SIZE; i++) {
-            const offset = i + (WIDTH + 1);
-
-            const start = BLOCK_SIZE + WIDTH;
-            const n = Math.ceil((offset - start) / BLOCK_SIZE)
-            const padding = n * (BLOCK_SIZE + 1);
-            let color = avgColor;
-
-            const y = Math.floor(i / BLOCK_SIZE);
-            const x = i % BLOCK_SIZE;
-
-            // boundary filtering
-            if (x === 0 && y === 0) {
-                const ct = BLOCK_SIZE - 1;
-                const left = ct + BLOCK_SIZE;
-                const top = (3 * BLOCK_SIZE) - ct;
-                const leftColor = samples[left];
-                const topColor = samples[top];
-
-                color = color.map((v,i) => 2*v + leftColor[i] + topColor[i]);
-                color = color.map(v => v >> 2); // div by 4
-            } else if (y === 0) { // along the topmost row
-                const top = x + (2 * BLOCK_SIZE);
-                const topColor = samples[top];
-
-                color = color.map((v,i) => 3*v + topColor[i]);
-                color = color.map(v => v >> 2); // div by 4
-            } else if (x === 0) { // along the leftmost column
-                const left = (2 * BLOCK_SIZE) - y;
-                const leftColor = samples[left];
-
-                color = color.map((v,i) => 3*v + leftColor[i]);
-                color = color.map(v => v >> 2); // div by 4
-            }
-            data.set(color, (offset + padding) * 4);
-        }
+        predictDC(data, samples);
     } else {
         throw new Error("mode not implemented!")
     }
@@ -100,6 +64,46 @@ export const averageColor = (samples: number[][]) => {
 
     // equivalent to 1/(2*BLOCK_SIZE)
     return sumColor.map((v) => (v >> (1 + Math.log2(BLOCK_SIZE))))
+}
+
+export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
+    const avgColor = averageColor(samples);
+    for (let i = 0; i < BLOCK_SIZE * BLOCK_SIZE; i++) {
+        const offset = i + (WIDTH + 1);
+
+        const start = BLOCK_SIZE + WIDTH;
+        const n = Math.ceil((offset - start) / BLOCK_SIZE)
+        const padding = n * (BLOCK_SIZE + 1);
+        let color = avgColor;
+
+        const y = Math.floor(i / BLOCK_SIZE);
+        const x = i % BLOCK_SIZE;
+
+        // boundary filtering
+        if (x === 0 && y === 0) {
+            const ct = BLOCK_SIZE - 1;
+            const left = ct + BLOCK_SIZE;
+            const top = (3 * BLOCK_SIZE) - ct;
+            const leftColor = samples[left];
+            const topColor = samples[top];
+
+            color = color.map((v, i) => 2 * v + leftColor[i] + topColor[i]);
+            color = color.map(v => v >> 2); // div by 4
+        } else if (y === 0) { // along the topmost row
+            const top = x + (2 * BLOCK_SIZE);
+            const topColor = samples[top];
+
+            color = color.map((v, i) => 3 * v + topColor[i]);
+            color = color.map(v => v >> 2); // div by 4
+        } else if (x === 0) { // along the leftmost column
+            const left = (2 * BLOCK_SIZE) - y;
+            const leftColor = samples[left];
+
+            color = color.map((v, i) => 3 * v + leftColor[i]);
+            color = color.map(v => v >> 2); // div by 4
+        }
+        data.set(color, (offset + padding) * 4);
+    }
 }
 
 export const parseLine = (line: number[]) => {
