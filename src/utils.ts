@@ -1,6 +1,6 @@
-export const BLOCK_SIZE = 16;
-export const WIDTH = 1 + BLOCK_SIZE * 2;
-export const HEIGHT = 1 + BLOCK_SIZE * 2;
+export const M = 16; // BLOCK SIZE
+export const WIDTH = 1 + M * 2;
+export const HEIGHT = 1 + M * 2;
 
 export interface PredictionContext {
   imgCtx: ImageBitmapRenderingContext;
@@ -19,7 +19,7 @@ export const makePred = async (
   const mid = Math.floor(samples.length / 2);
 
   // along left side
-  for (let i = 0; i < BLOCK_SIZE * 2; i++) {
+  for (let i = 0; i < M * 2; i++) {
     const offset = (HEIGHT - i - 1) * WIDTH * 4;
     data.set(samples[i], offset);
   }
@@ -28,7 +28,7 @@ export const makePred = async (
   data.set(samples[mid]);
 
   // along top side
-  for (let i = 0; i < BLOCK_SIZE * 2; i++) {
+  for (let i = 0; i < M * 2; i++) {
     const offset = (i + 1) * 4;
     data.set(samples[mid + i + 1], offset);
   }
@@ -50,9 +50,9 @@ export const makePred = async (
 
 export const averageColor = (samples: number[][]) => {
   const sumColor = [0, 0, 0, 0];
-  for (let i = 0; i < BLOCK_SIZE; i++) {
-    const left = i + BLOCK_SIZE;
-    const top = 3 * BLOCK_SIZE - i;
+  for (let i = 0; i < M; i++) {
+    const left = i + M;
+    const top = 3 * M - i;
     const leftColor = samples[left];
     const topColor = samples[top];
 
@@ -65,27 +65,27 @@ export const averageColor = (samples: number[][]) => {
   }
 
   // equivalent to 1/(2*BLOCK_SIZE)
-  return sumColor.map((v) => v >> (1 + Math.log2(BLOCK_SIZE)));
+  return sumColor.map((v) => v >> (1 + Math.log2(M)));
 };
 
 export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
   const avgColor = averageColor(samples);
-  for (let i = 0; i < BLOCK_SIZE * BLOCK_SIZE; i++) {
+  for (let i = 0; i < M * M; i++) {
     const offset = i + (WIDTH + 1);
 
-    const start = BLOCK_SIZE + WIDTH;
-    const n = Math.ceil((offset - start) / BLOCK_SIZE);
-    const padding = n * (BLOCK_SIZE + 1);
+    const start = M + WIDTH;
+    const n = Math.ceil((offset - start) / M);
+    const padding = n * (M + 1);
     let color = avgColor;
 
-    const y = Math.floor(i / BLOCK_SIZE);
-    const x = i % BLOCK_SIZE;
+    const y = Math.floor(i / M);
+    const x = i % M;
 
     // boundary filtering
     if (x === 0 && y === 0) {
-      const ct = BLOCK_SIZE - 1;
-      const left = ct + BLOCK_SIZE;
-      const top = 3 * BLOCK_SIZE - ct;
+      const ct = M - 1;
+      const left = ct + M;
+      const top = 3 * M - ct;
       const leftColor = samples[left];
       const topColor = samples[top];
 
@@ -93,14 +93,14 @@ export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
       color = color.map((v) => v >> 2); // div by 4
     } else if (y === 0) {
       // along the topmost row
-      const top = x + 2 * BLOCK_SIZE;
+      const top = x + 2 * M;
       const topColor = samples[top];
 
       color = color.map((v, i) => 3 * v + topColor[i]);
       color = color.map((v) => v >> 2);
     } else if (x === 0) {
       // along the leftmost column
-      const left = 2 * BLOCK_SIZE - y;
+      const left = 2 * M - y;
       const leftColor = samples[left];
 
       color = color.map((v, i) => 3 * v + leftColor[i]);
@@ -136,22 +136,22 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
     fSamples.push(fColor);
   }
 
-  const ls = fSamples[2 * BLOCK_SIZE - 1]; // left start
-  const le = fSamples[BLOCK_SIZE]; // left end
-  const ts = fSamples[2 * BLOCK_SIZE + 1]; // top start
-  const te = fSamples[3 * BLOCK_SIZE - 1]; // top end
+  const ls = fSamples[2 * M - 1]; // left start
+  const le = fSamples[M]; // left end
+  const ts = fSamples[2 * M + 1]; // top start
+  const te = fSamples[3 * M - 1]; // top end
 
-  for (let i = 0; i < BLOCK_SIZE * BLOCK_SIZE; i++) {
+  for (let i = 0; i < M * M; i++) {
     const offset = i + (WIDTH + 1);
 
-    const start = BLOCK_SIZE + WIDTH;
-    const n = Math.ceil((offset - start) / BLOCK_SIZE);
-    const padding = n * (BLOCK_SIZE + 1);
+    const start = M + WIDTH;
+    const n = Math.ceil((offset - start) / M);
+    const padding = n * (M + 1);
 
-    const y = Math.floor(i / BLOCK_SIZE);
-    const x = i % BLOCK_SIZE;
-    const horiColor = mix(ls, le, y / BLOCK_SIZE);
-    const vertColor = mix(ts, te, x / BLOCK_SIZE);
+    const y = Math.floor(i / M);
+    const x = i % M;
+    const horiColor = mix(ls, le, y / M);
+    const vertColor = mix(ts, te, x / M);
     const color = mix(horiColor, vertColor, 0.5);
     data.set(color, (offset + padding) * 4);
   }
