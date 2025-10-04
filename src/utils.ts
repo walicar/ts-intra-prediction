@@ -1,3 +1,6 @@
+import { predictDC } from "./predictions/dc";
+import { predictPlanar } from "./predictions/planar";
+
 export const M = 16; // BLOCK SIZE
 export const WIDTH = 1 + M * 2;
 export const HEIGHT = 1 + M * 2;
@@ -46,115 +49,6 @@ export const makePred = async (
   const imageBitmap = await createImageBitmap(imageData);
   imgCtx.transferFromImageBitmap(imageBitmap);
   return preCtx;
-};
-
-export const averageColor = (samples: number[][]) => {
-  const sumColor = [0, 0, 0, 0];
-  for (let i = 0; i < M; i++) {
-    const left = i + M;
-    const top = 3 * M - i;
-    const leftColor = samples[left];
-    const topColor = samples[top];
-
-    const mixColor = leftColor.map((v, i) => v + topColor[i]);
-
-    sumColor[0] += mixColor[0];
-    sumColor[1] += mixColor[1];
-    sumColor[2] += mixColor[2];
-    sumColor[3] += mixColor[3];
-  }
-
-  // equivalent to 1/(2*BLOCK_SIZE)
-  return sumColor.map((v) => v >> (1 + Math.log2(M)));
-};
-
-export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
-  const avgColor = averageColor(samples);
-  for (let i = 0; i < M * M; i++) {
-    const offset = i + (WIDTH + 1);
-
-    const start = M + WIDTH;
-    const n = Math.ceil((offset - start) / M);
-    const padding = n * (M + 1);
-    let color = avgColor;
-
-    const y = Math.floor(i / M);
-    const x = i % M;
-
-    // boundary filtering
-    if (x === 0 && y === 0) {
-      const ct = M - 1;
-      const left = ct + M;
-      const top = 3 * M - ct;
-      const leftColor = samples[left];
-      const topColor = samples[top];
-
-      color = color.map((v, i) => 2 * v + leftColor[i] + topColor[i]);
-      color = color.map((v) => v >> 2); // div by 4
-    } else if (y === 0) {
-      // along the topmost row
-      const top = x + 2 * M;
-      const topColor = samples[top];
-
-      color = color.map((v, i) => 3 * v + topColor[i]);
-      color = color.map((v) => v >> 2);
-    } else if (x === 0) {
-      // along the leftmost column
-      const left = 2 * M - y;
-      const leftColor = samples[left];
-
-      color = color.map((v, i) => 3 * v + leftColor[i]);
-      color = color.map((v) => v >> 2);
-    }
-    data.set(color, (offset + padding) * 4);
-  }
-};
-
-export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
-  const fSamples: Uint8ClampedArray[] = [];
-  const applyFilter = (triplet: number[][]): Uint8ClampedArray => {
-    const lowPass = [0.25, 0.5, 0.25];
-    const a = triplet[0].map((v) => v * lowPass[0]);
-    const b = triplet[1].map((v) => v * lowPass[1]);
-    const c = triplet[2].map((v) => v * lowPass[2]);
-    const r = [...a.map((v, i) => v + b[i] + c[i]), 255];
-    return new Uint8ClampedArray(r);
-  };
-
-  for (let i = 0; i < samples.length; i += 1) {
-    let fColor: Uint8ClampedArray;
-
-    // clamp edges
-    if (i === 0) {
-      fColor = applyFilter([samples[0], samples[0], samples[1]]);
-    } else if (i === samples.length - 1) {
-      const last = samples.length - 1;
-      fColor = applyFilter([samples[last - 1], samples[last], samples[last]]);
-    } else {
-      fColor = applyFilter([samples[i - 1], samples[i], samples[i + 1]]);
-    }
-    fSamples.push(fColor);
-  }
-
-  const ls = fSamples[2 * M - 1]; // left start
-  const le = fSamples[M]; // left end
-  const ts = fSamples[2 * M + 1]; // top start
-  const te = fSamples[3 * M - 1]; // top end
-
-  for (let i = 0; i < M * M; i++) {
-    const offset = i + (WIDTH + 1);
-
-    const start = M + WIDTH;
-    const n = Math.ceil((offset - start) / M);
-    const padding = n * (M + 1);
-
-    const y = Math.floor(i / M);
-    const x = i % M;
-    const horiColor = mix(ls, le, y / M);
-    const vertColor = mix(ts, te, x / M);
-    const color = mix(horiColor, vertColor, 0.5);
-    data.set(color, (offset + padding) * 4);
-  }
 };
 
 export const parseLine = (line: number[]) => {
