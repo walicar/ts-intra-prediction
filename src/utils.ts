@@ -1,3 +1,4 @@
+import { predictAngular } from "./predictions/angular";
 import { predictDC } from "./predictions/dc";
 import { predictPlanar } from "./predictions/planar";
 
@@ -41,6 +42,8 @@ export const makePred = async (
     predictDC(data, samples);
   } else if (mode == 1) {
     predictPlanar(data, samples);
+  } else if (mode < 34) {
+    predictAngular(data, samples, mode);
   } else {
     throw new Error('mode not implemented!');
   }
