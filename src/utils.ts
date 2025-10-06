@@ -38,14 +38,27 @@ export const makePred = async (
   }
 
   // create prediction block
+  const predictedBlock = new Uint8ClampedArray(M*M*4);
   if (mode == 0) {
-    predictDC(data, samples);
+    predictDC(predictedBlock, samples);
   } else if (mode == 1) {
-    predictPlanar(data, samples);
+    predictPlanar(predictedBlock, samples);
   } else if (mode < 34) {
-    predictAngular(data, samples, mode);
+    predictAngular(predictedBlock, samples, mode);
   } else {
     throw new Error('mode not implemented!');
+  }
+
+  // put predicted block in the frame buffer
+  for (let i = 0; i < M * M; i++) {
+    const offset = i + (WIDTH + 1);
+
+    const start = M + WIDTH;
+    const n = Math.ceil((offset - start) / M);
+    const padding = n * (M + 1);
+    const color = predictedBlock.subarray(i * 4, i * 4 + 4);
+
+    data.set(color, (offset + padding) * 4);
   }
 
   const imageData = new ImageData(data, WIDTH, HEIGHT);

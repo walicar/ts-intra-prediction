@@ -1,4 +1,4 @@
-import { M, mix, WIDTH } from "../utils";
+import { M, mix } from "../utils";
 
 export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
   const fSamples: Uint8ClampedArray[] = [];
@@ -7,7 +7,7 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
     const a = triplet[0].map((v) => v * lowPass[0]);
     const b = triplet[1].map((v) => v * lowPass[1]);
     const c = triplet[2].map((v) => v * lowPass[2]);
-    const r = [...a.map((v, i) => v + b[i] + c[i]), 255];
+    const r = [...a.map((v, i) => v + b[i] + c[i])];
     return new Uint8ClampedArray(r);
   };
 
@@ -32,17 +32,11 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
   const te = fSamples[3 * M - 1]; // top end
 
   for (let i = 0; i < M * M; i++) {
-    const offset = i + (WIDTH + 1);
-
-    const start = M + WIDTH;
-    const n = Math.ceil((offset - start) / M);
-    const padding = n * (M + 1);
-
     const y = Math.floor(i / M);
     const x = i % M;
     const horiColor = mix(ls, le, y / M);
     const vertColor = mix(ts, te, x / M);
     const color = mix(horiColor, vertColor, 0.5);
-    data.set(color, (offset + padding) * 4);
+    data.set(color, i * 4);
   }
 };

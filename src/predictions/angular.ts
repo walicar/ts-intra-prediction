@@ -37,12 +37,6 @@ const angleTable: Record<number, number> = {
 
 export const predictAngular = (data: Uint8ClampedArray, samples: number[][], mode = 2) => {
   for (let i = 0; i < M * M; i++) {
-    const bump = i + (WIDTH + 1);
-
-    const start = M + WIDTH;
-    const n = Math.ceil((bump - start) / M);
-    const padding = n * (M + 1);
-
     const y = Math.floor(i / M);
     const x = i % M;
 
@@ -76,6 +70,6 @@ export const predictAngular = (data: Uint8ClampedArray, samples: number[][], mod
     const a = aColor.map((v) => v * aFactor);
     const color = a.map((v, i) => Math.round(v + b[i]));
 
-    data.set(color, (bump + padding) * 4);
+    data.set(color, i * 4);
   }
 }

@@ -1,15 +1,9 @@
-import { M, WIDTH } from "../utils";
+import { M } from "../utils";
 
 export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
   const avgColor = averageColor(samples);
   for (let i = 0; i < M * M; i++) {
-    const offset = i + (WIDTH + 1);
-
-    const start = M + WIDTH;
-    const n = Math.ceil((offset - start) / M);
-    const padding = n * (M + 1);
     let color = avgColor;
-
     const y = Math.floor(i / M);
     const x = i % M;
 
@@ -38,7 +32,8 @@ export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
       color = color.map((v, i) => 3 * v + leftColor[i]);
       color = color.map((v) => v >> 2);
     }
-    data.set(color, (offset + padding) * 4);
+
+    data.set(color, i * 4);
   }
 };
 
