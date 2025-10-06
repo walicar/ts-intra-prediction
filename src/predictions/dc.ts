@@ -2,38 +2,40 @@ import { M } from "../utils";
 
 export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
   const avgColor = averageColor(samples);
-  for (let i = 0; i < M * M; i++) {
-    let color = avgColor;
-    const y = Math.floor(i / M);
-    const x = i % M;
 
-    // boundary filtering
-    if (x === 0 && y === 0) {
-      const ct = M - 1;
-      const left = ct + M;
-      const top = 3 * M - ct;
-      const leftColor = samples[left];
-      const topColor = samples[top];
+  for (let y = 0; y < M; y++) {
+    for (let x = 0; x < M; x++) {
+      let color = avgColor;
 
-      color = color.map((v, i) => 2 * v + leftColor[i] + topColor[i]);
-      color = color.map((v) => v >> 2); // div by 4
-    } else if (y === 0) {
-      // along the topmost row
-      const top = x + 2 * M;
-      const topColor = samples[top];
+      // boundary filtering
+      if (x === 0 && y === 0) {
+        const ct = M - 1;
+        const left = ct + M;
+        const top = 3 * M - ct;
+        const leftColor = samples[left];
+        const topColor = samples[top];
 
-      color = color.map((v, i) => 3 * v + topColor[i]);
-      color = color.map((v) => v >> 2);
-    } else if (x === 0) {
-      // along the leftmost column
-      const left = 2 * M - y;
-      const leftColor = samples[left];
+        color = color.map((v, i) => 2 * v + leftColor[i] + topColor[i]);
+        color = color.map((v) => v >> 2); // div by 4
+      } else if (y === 0) {
+        // along the topmost row
+        const top = x + 2 * M;
+        const topColor = samples[top];
 
-      color = color.map((v, i) => 3 * v + leftColor[i]);
-      color = color.map((v) => v >> 2);
+        color = color.map((v, i) => 3 * v + topColor[i]);
+        color = color.map((v) => v >> 2);
+      } else if (x === 0) {
+        // along the leftmost column
+        const left = 2 * M - y;
+        const leftColor = samples[left];
+
+        color = color.map((v, i) => 3 * v + leftColor[i]);
+        color = color.map((v) => v >> 2);
+      }
+
+      const i = (y * M) + x;
+      data.set(color, i * 4);
     }
-
-    data.set(color, i * 4);
   }
 };
 

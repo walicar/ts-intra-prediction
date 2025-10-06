@@ -36,40 +36,40 @@ const angleTable: Record<number, number> = {
 }
 
 export const predictAngular = (data: Uint8ClampedArray, samples: number[][], mode = 2) => {
-  for (let i = 0; i < M * M; i++) {
-    const y = Math.floor(i / M);
-    const x = i % M;
+  for (let y = 0; y < M; y++) {
+    for (let x = 0; x < M; x++) {
+      const isVertical = mode > 18;
+      const displacement = angleTable[mode];
+      let offset;
+      let weight;
+      let k;
+      if (isVertical) {
+        // vertical mode
+        offset = Math.floor(((y + 1) * displacement) / 32);
+        weight = Math.abs(((y + 1) * displacement) % 32);
+        k = x + 1 + offset;
+      } else {
+        // horizontal
+        offset = Math.floor(((x + 1) * displacement) / 32);
+        weight = Math.abs(((x + 1) * displacement) % 32);
+        k = y + 1 + offset;
+      }
 
-    const isVertical = mode > 18;
-    const displacement = angleTable[mode];
-    let offset;
-    let weight;
-    let k;
-    if (isVertical) { 
-      // vertical mode
-      offset = Math.floor(((y + 1) * displacement) / 32);
-      weight = Math.abs(((y + 1) * displacement) % 32);
-      k = x + 1 + offset;
-    } else { 
-      // horizontal
-      offset = Math.floor(((x + 1) * displacement) / 32);
-      weight = Math.abs(((x + 1) * displacement) % 32);
-      k = y + 1 + offset;
+      // remember: M * 2 = 32 which is the index of the top left pixel 
+      // fixed: negative weight is bad!
+      const idx = isVertical ? (M * 2) + k : (M * 2) - k;
+      const bFactor = (32 - weight) / 32;
+      const aFactor = weight / 32;
+
+      const bColor = samples[idx];
+      const aColor = samples[idx + 1];
+
+      const b = bColor.map((v) => v * bFactor);
+      const a = aColor.map((v) => v * aFactor);
+      const color = a.map((v, i) => Math.round(v + b[i]));
+
+      const i = (y * M) + x
+      data.set(color, i * 4);
     }
-
-    // remember: M * 2 = 32 which is the index of the top left pixel 
-    // fixed: negative weight is bad!
-    const idx = isVertical ? (M * 2) + k : (M * 2) - k;
-    const bFactor = (32 - weight) / 32;
-    const aFactor = weight / 32;
-
-    const bColor = samples[idx];
-    const aColor = samples[idx + 1];
-
-    const b = bColor.map((v) => v * bFactor);
-    const a = aColor.map((v) => v * aFactor);
-    const color = a.map((v, i) => Math.round(v + b[i]));
-
-    data.set(color, i * 4);
   }
 }

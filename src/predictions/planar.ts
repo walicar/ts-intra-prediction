@@ -31,12 +31,13 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
   const ts = fSamples[2 * M + 1]; // top start
   const te = fSamples[3 * M - 1]; // top end
 
-  for (let i = 0; i < M * M; i++) {
-    const y = Math.floor(i / M);
-    const x = i % M;
-    const horiColor = mix(ls, le, y / M);
-    const vertColor = mix(ts, te, x / M);
-    const color = mix(horiColor, vertColor, 0.5);
-    data.set(color, i * 4);
+  for (let y = 0; y < M; y++) {
+    for (let x = 0; x < M; x++) {
+      const horiColor = mix(ls, le, y / M);
+      const vertColor = mix(ts, te, x / M);
+      const color = mix(horiColor, vertColor, 0.5);
+      const i = (y * M) + x;
+      data.set(color, i * 4);
+    }
   }
 };
