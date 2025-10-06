@@ -1,4 +1,4 @@
-import { M } from "../utils";
+import { M } from '../utils';
 
 export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
   const avgColor = averageColor(samples);
@@ -33,7 +33,7 @@ export const predictDC = (data: Uint8ClampedArray, samples: number[][]) => {
         color = color.map((v) => v >> 2);
       }
 
-      const i = (y * M) + x;
+      const i = y * M + x;
       data.set(color, i * 4);
     }
   }

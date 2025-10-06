@@ -1,4 +1,4 @@
-import { M, mix } from "../utils";
+import { M, mix } from '../utils';
 
 export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
   const fSamples: Uint8ClampedArray[] = [];
@@ -36,7 +36,7 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
       const horiColor = mix(ls, le, y / M);
       const vertColor = mix(ts, te, x / M);
       const color = mix(horiColor, vertColor, 0.5);
-      const i = (y * M) + x;
+      const i = y * M + x;
       data.set(color, i * 4);
     }
   }

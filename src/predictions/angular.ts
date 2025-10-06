@@ -1,4 +1,4 @@
-import { M, WIDTH } from "../utils";
+import { M, WIDTH } from '../utils';
 
 const angleTable: Record<number, number> = {
   2: 32,
@@ -33,9 +33,13 @@ const angleTable: Record<number, number> = {
   31: 17,
   32: 21,
   33: 26,
-}
+};
 
-export const predictAngular = (data: Uint8ClampedArray, samples: number[][], mode = 2) => {
+export const predictAngular = (
+  data: Uint8ClampedArray,
+  samples: number[][],
+  mode = 2,
+) => {
   for (let y = 0; y < M; y++) {
     for (let x = 0; x < M; x++) {
       const isVertical = mode > 18;
@@ -55,9 +59,9 @@ export const predictAngular = (data: Uint8ClampedArray, samples: number[][], mod
         k = y + 1 + offset;
       }
 
-      // remember: M * 2 = 32 which is the index of the top left pixel 
+      // remember: M * 2 = 32 which is the index of the top left pixel
       // fixed: negative weight is bad!
-      const idx = isVertical ? (M * 2) + k : (M * 2) - k;
+      const idx = isVertical ? M * 2 + k : M * 2 - k;
       const bFactor = (32 - weight) / 32;
       const aFactor = weight / 32;
 
@@ -68,8 +72,8 @@ export const predictAngular = (data: Uint8ClampedArray, samples: number[][], mod
       const a = aColor.map((v) => v * aFactor);
       const color = a.map((v, i) => Math.round(v + b[i]));
 
-      const i = (y * M) + x
+      const i = y * M + x;
       data.set(color, i * 4);
     }
   }
-}
+};

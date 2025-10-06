@@ -1,6 +1,6 @@
-import { predictAngular } from "./predictions/angular";
-import { predictDC } from "./predictions/dc";
-import { predictPlanar } from "./predictions/planar";
+import { predictAngular } from './predictions/angular';
+import { predictDC } from './predictions/dc';
+import { predictPlanar } from './predictions/planar';
 
 export const M = 16; // BLOCK SIZE
 export const WIDTH = 1 + M * 2;
@@ -38,7 +38,7 @@ export const makePred = async (
   }
 
   // create prediction block
-  const predictedBlock = new Uint8ClampedArray(M*M*4);
+  const predictedBlock = new Uint8ClampedArray(M * M * 4);
   if (mode == 0) {
     predictDC(predictedBlock, samples);
   } else if (mode == 1) {
