@@ -43,7 +43,7 @@ export const makePred = async (
     predictDC(predictedBlock, samples);
   } else if (mode == 1) {
     predictPlanar(predictedBlock, samples);
-  } else if (mode < 34) {
+  } else if (mode <= 34) {
     predictAngular(predictedBlock, samples, mode);
   } else {
     throw new Error('mode not implemented!');

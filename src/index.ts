@@ -32,7 +32,7 @@ if (!imgCtx) throw new Error('Unable to get bitmaprenderer context');
 await makePred({
   imgCtx,
   line,
-  mode: 17,
+  mode: 34,
 });
 
 root?.append(canvas);

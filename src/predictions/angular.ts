@@ -1,39 +1,10 @@
-import { M, WIDTH } from '../utils';
+import { M } from '../utils';
 
-const angleTable: Record<number, number> = {
-  2: 32,
-  3: 26,
-  4: 21,
-  5: 17,
-  6: 13,
-  7: 9,
-  8: 5,
-  9: 2,
-  10: 0,
-  11: -2,
-  12: -5,
-  13: -9,
-  14: -13,
-  15: -17,
-  16: -21,
-  17: -26,
-  18: -32,
-  19: -26,
-  20: -21,
-  21: -17,
-  22: -13,
-  23: -9,
-  24: -5,
-  25: -2,
-  26: 0,
-  27: 2,
-  28: 5,
-  29: 9,
-  30: 13,
-  31: 17,
-  32: 21,
-  33: 26,
-};
+// 1 + 34
+const angleTable: Record<number, number> = [
+  0, 0, 32, 26, 21, 17, 13, 9, 5, 2, 0, -2, -5, -9, -13, -17, -21, -26, -32,
+  -26, -21, -17, -13, -9, -5, -2, 0, 2, 5, 9, 13, 17, 21, 26, 32,
+];
 
 export const predictAngular = (
   data: Uint8ClampedArray,
@@ -66,7 +37,7 @@ export const predictAngular = (
       const aFactor = weight / 32;
 
       const bColor = samples[idx];
-      const aColor = samples[idx + 1];
+      const aColor = samples[idx + 1] ?? samples[idx]; // clamp if OOB
 
       const b = bColor.map((v) => v * bFactor);
       const a = aColor.map((v) => v * aFactor);
