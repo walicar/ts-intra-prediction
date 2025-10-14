@@ -86,7 +86,7 @@ export const predictAngular = (
       }
 
       const i = y * M + x;
-      if (weight != 0) {
+      if (weight === 0) {
         const color = ref[C + k];
         data.set(color, i * 4);
       } else {
@@ -94,11 +94,11 @@ export const predictAngular = (
         const aFactor = weight / 32;
 
         const bColor = ref[C + k];
-        const aColor = ref[C + k + 1] ?? bColor;
+        const aColor = ref[C + k + 1];
 
         const b = bColor.map((v) => v * bFactor);
         const a = aColor.map((v) => v * aFactor);
-        const color = a.map((v, i) => Math.round(v + b[i]));
+        const color = a.map((v, i) => Math.floor(v + b[i]));
 
         data.set(color, i * 4);
       }
