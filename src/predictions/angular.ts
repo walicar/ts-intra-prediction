@@ -9,7 +9,7 @@ const angleTable: number[] = [
 
 // 15 negative displacements in Q8 format,
 // index using [mode - 11], such that angelTable[mode] < 0
-// subtract 11 to start at the first negative mode from left to right
+// subtract 11 to start at the first negative mode
 const invAngleTable: number[] = [
   -4096, -1638, -910, -630, -482, -390, -315, -256, -315, -390, -482, -630,
   -910, -1638, -4096,
