@@ -52,7 +52,7 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
       const vc = vbc.map((v, i) => v + vac[i]);
 
       const color = hc.map((v, i) => Math.floor((v + vc[i]) / 2));
-      console.log(color[0], color[1], color[2]);
+      color[3] = 255;
       const i = y * M + x;
       data.set(color, i * 4);
     }
