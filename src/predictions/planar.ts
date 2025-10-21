@@ -26,16 +26,33 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
     fSamples.push(fColor);
   }
 
-  const ls = fSamples[2 * M - 1]; // left start
-  const le = fSamples[M]; // left end
-  const ts = fSamples[2 * M + 1]; // top start
-  const te = fSamples[3 * M - 1]; // top end
-
+  const C = 2 * M;
   for (let y = 0; y < M; y++) {
     for (let x = 0; x < M; x++) {
-      const horiColor = mix(ls, le, y / M);
-      const vertColor = mix(ts, te, x / M);
-      const color = mix(horiColor, vertColor, 0.5);
+      // horizontal color
+      const hbf = (M - y - 1) / M;
+      const hbr = fSamples[C + x];
+      const hbc = hbr.map((v) => v * hbf);
+
+      const haf = (y - 1) / M;
+      const har = fSamples[C - M];
+      const hac = har.map((v) => v * haf);
+
+      const hc = hbc.map((v, i) => v + hac[i]);
+
+      // vertical color
+      const vbf = (M - x - 1) / M;
+      const vbr = fSamples[C - y];
+      const vbc = vbr.map((v) => v * vbf);
+
+      const vaf = (x - 1) / M;
+      const vaR = fSamples[C + M];
+      const vac = vaR.map((v) => v * vaf);
+
+      const vc = vbc.map((v, i) => v + vac[i]);
+
+      const color = hc.map((v, i) => Math.floor((v + vc[i]) / 2));
+      console.log(color[0], color[1], color[2]);
       const i = y * M + x;
       data.set(color, i * 4);
     }

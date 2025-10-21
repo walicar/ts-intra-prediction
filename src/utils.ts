@@ -80,8 +80,3 @@ export const parseLine = (line: number[]) => {
   }
   return lineColors;
 };
-
-type Color = Uint8ClampedArray;
-export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-export const mix = (a: Color, b: Color, t: number) =>
-  a.map((v, i) => lerp(v, b[i], t));
