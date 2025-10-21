@@ -1,4 +1,4 @@
-import { M, mix } from '../utils';
+import { M } from '../utils';
 
 export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
   const fSamples: Uint8ClampedArray[] = [];
