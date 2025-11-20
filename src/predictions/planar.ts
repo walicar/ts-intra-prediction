@@ -30,23 +30,23 @@ export const predictPlanar = (data: Uint8ClampedArray, samples: number[][]) => {
   for (let y = 0; y < M; y++) {
     for (let x = 0; x < M; x++) {
       // horizontal color
-      const hbf = (M - y - 1) / M;
-      const hbr = fSamples[C + x];
+      const hbf = (M - x - 1) / M;
+      const hbr = fSamples[C - y];
       const hbc = hbr.map((v) => v * hbf);
 
-      const haf = (y - 1) / M;
-      const har = fSamples[C - M];
+      const haf = (x + 1) / M;
+      const har = fSamples[C + M + 1];
       const hac = har.map((v) => v * haf);
 
       const hc = hbc.map((v, i) => v + hac[i]);
 
       // vertical color
-      const vbf = (M - x - 1) / M;
-      const vbr = fSamples[C - y];
+      const vbf = (M - y - 1) / M;
+      const vbr = fSamples[C + x];
       const vbc = vbr.map((v) => v * vbf);
 
-      const vaf = (x - 1) / M;
-      const vaR = fSamples[C + M];
+      const vaf = (y + 1) / M;
+      const vaR = fSamples[C - M - 1];
       const vac = vaR.map((v) => v * vaf);
 
       const vc = vbc.map((v, i) => v + vac[i]);
